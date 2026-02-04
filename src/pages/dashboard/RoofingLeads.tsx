@@ -15,7 +15,10 @@ import {
   Home,
   Shield,
   Flame,
-  Snowflake
+  Snowflake,
+  Activity,
+  Zap,
+  BarChart3
 } from "lucide-react";
 import { supabase } from "../../integrations/supabase/client";
 import { GlowingEffect } from "../../components/ui/glowing-effect";
@@ -49,99 +52,153 @@ interface RoofingLead {
   duration_ms?: number;
 }
 
-// Components with GlowingEffect - 21st.dev style
-const GlowingCard = ({ children, className = "", onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) => (
-  <li className={`min-h-[8rem] list-none ${className}`}>
-    <div
-      onClick={onClick}
-      className={`relative h-full rounded-[1.25rem] border-[0.75px] border-zinc-700/50 p-2 md:rounded-[1.5rem] md:p-3 ${onClick ? 'cursor-pointer' : ''}`}
-    >
-      <GlowingEffect
-        spread={40}
-        glow={true}
-        disabled={false}
-        proximity={64}
-        inactiveZone={0.01}
-        borderWidth={3}
-        variant="roofing"
-      />
-      <div className="relative flex h-full flex-col justify-between gap-4 overflow-hidden rounded-xl border-[0.75px] border-zinc-800 bg-zinc-900/90 p-6 shadow-sm">
-        {children}
+// Premium Bento Card with GlowingEffect - 21st.dev inspired
+const BentoCard = ({ 
+  children, 
+  className = "", 
+  size = "default",
+  onClick 
+}: { 
+  children: React.ReactNode; 
+  className?: string; 
+  size?: "default" | "large" | "wide";
+  onClick?: () => void;
+}) => {
+  const sizeClasses = {
+    default: "col-span-1",
+    large: "col-span-1 md:col-span-2 row-span-2",
+    wide: "col-span-1 md:col-span-2"
+  };
+
+  return (
+    <div className={`${sizeClasses[size]} list-none ${className}`}>
+      <div
+        onClick={onClick}
+        className={`group relative h-full rounded-2xl border border-zinc-800/60 p-[1px] transition-all duration-500 ${onClick ? 'cursor-pointer' : ''}`}
+      >
+        <GlowingEffect
+          spread={40}
+          glow={true}
+          disabled={false}
+          proximity={80}
+          inactiveZone={0.01}
+          borderWidth={2}
+          variant="roofing"
+        />
+        <div className="relative flex h-full flex-col overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-900 to-zinc-950 p-6 shadow-2xl shadow-black/20">
+          {/* Subtle inner glow */}
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="relative z-10">
+            {children}
+          </div>
+        </div>
       </div>
     </div>
-  </li>
-);
+  );
+};
 
-// Lead card with GlowingEffect - the actual leads shown in the list
+// Lead card with premium styling
 const GlowingLeadCard = ({ children, className = "", onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) => (
   <div className={`relative mb-4 ${className}`}>
     <div
       onClick={onClick}
-      className={`relative rounded-[1.25rem] border-[0.75px] border-zinc-700/50 p-2 md:rounded-[1.5rem] md:p-3 ${onClick ? 'cursor-pointer' : ''}`}
+      className={`group relative rounded-2xl border border-zinc-800/50 p-[1px] transition-all duration-300 ${onClick ? 'cursor-pointer' : ''}`}
     >
       <GlowingEffect
         spread={60}
         glow={true}
         disabled={false}
-        proximity={100}
+        proximity={120}
         inactiveZone={0.01}
         borderWidth={2}
         variant="roofing"
       />
-      <div className="relative overflow-hidden rounded-xl border-[0.75px] border-zinc-800 bg-zinc-900/90 p-6 shadow-sm transition-all duration-300 hover:border-amber-500/30">
-        {children}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-950 p-6 transition-all duration-300">
+        {/* Hover gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 via-amber-500/5 to-orange-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="relative z-10">
+          {children}
+        </div>
       </div>
     </div>
   </div>
 );
 
-const CyberCard = ({ children, className = "", onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) => (
-  <div
-    onClick={onClick}
-    className={`relative bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-xl p-6 transition-all duration-300 hover:border-amber-600/30 hover:shadow-lg hover:shadow-amber-500/5 ${onClick ? 'cursor-pointer' : ''} ${className}`}
-  >
+// Empty state card
+const EmptyCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+  <div className={`relative bg-zinc-900/50 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-8 ${className}`}>
     {children}
   </div>
 );
 
-const StatCard = ({ label, value, icon: Icon, color, description }: { label: string; value: string | number; icon: any; color: string; description?: string }) => (
-  <GlowingCard>
-    <div className="flex items-center gap-4">
-      <div className={`p-3 rounded-lg bg-zinc-950/80 border border-zinc-800/50 ${color}`}>
-        <Icon className="w-6 h-6" />
+// Premium Stat Card
+const StatCard = ({ 
+  label, 
+  value, 
+  icon: Icon, 
+  color, 
+  trend,
+  description 
+}: { 
+  label: string; 
+  value: string | number; 
+  icon: any; 
+  color: string; 
+  trend?: { value: number; positive: boolean };
+  description?: string;
+}) => (
+  <BentoCard>
+    <div className="flex flex-col h-full justify-between gap-4">
+      {/* Icon */}
+      <div className={`inline-flex w-12 h-12 items-center justify-center rounded-xl bg-gradient-to-br ${color} shadow-lg`}>
+        <Icon className="w-6 h-6 text-white" />
       </div>
-      <div className="flex-1">
-        <div className="text-3xl font-bold text-white font-mono tracking-tight">{value}</div>
-        <div className="text-sm font-medium text-zinc-400">{label}</div>
-        {description && <div className="text-xs text-zinc-500 mt-1">{description}</div>}
+      
+      {/* Value and Label */}
+      <div>
+        <div className="flex items-end gap-3">
+          <span className="text-4xl font-bold text-white tracking-tight">{value}</span>
+          {trend && (
+            <span className={`flex items-center gap-1 text-sm font-medium mb-1 ${trend.positive ? 'text-emerald-400' : 'text-red-400'}`}>
+              {trend.positive ? '+' : ''}{trend.value}%
+              <TrendingUp className={`w-3 h-3 ${!trend.positive && 'rotate-180'}`} />
+            </span>
+          )}
+        </div>
+        <p className="text-sm text-zinc-400 font-medium mt-1">{label}</p>
+        {description && <p className="text-xs text-zinc-500 mt-0.5">{description}</p>}
       </div>
     </div>
-  </GlowingCard>
+  </BentoCard>
 );
 
 const LeadQualityBadge = ({ quality }: { quality: string | null }) => {
   if (!quality) return null;
 
   const q = quality.toLowerCase();
-  let bgColor = 'bg-zinc-800';
+  let bgColor = 'bg-zinc-800/80';
   let textColor = 'text-zinc-400';
+  let borderColor = 'border-zinc-700';
   let icon = null;
 
   if (q === 'hot' || q === 'high') {
-    bgColor = 'bg-red-500/20';
+    bgColor = 'bg-gradient-to-r from-red-500/20 to-orange-500/20';
     textColor = 'text-red-400';
+    borderColor = 'border-red-500/30';
     icon = <Flame className="w-3 h-3" />;
   } else if (q === 'warm' || q === 'medium') {
-    bgColor = 'bg-yellow-500/20';
+    bgColor = 'bg-yellow-500/15';
     textColor = 'text-yellow-400';
+    borderColor = 'border-yellow-500/30';
   } else if (q === 'cold' || q === 'low') {
-    bgColor = 'bg-blue-500/20';
+    bgColor = 'bg-blue-500/15';
     textColor = 'text-blue-400';
+    borderColor = 'border-blue-500/30';
     icon = <Snowflake className="w-3 h-3" />;
   }
 
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${bgColor} ${textColor}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border ${bgColor} ${textColor} ${borderColor}`}>
       {icon}
       {quality}
     </span>
@@ -174,39 +231,43 @@ const LeadCard = ({ lead, expanded, onToggle }: { lead: RoofingLead; expanded: b
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
           {/* Appointment Status Icon */}
-          <div className={`p-3 rounded-xl border ${lead.appointment_scheduled ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-zinc-800 border-zinc-700'}`}>
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+            lead.appointment_scheduled 
+              ? 'bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 border border-emerald-500/30' 
+              : 'bg-zinc-800/80 border border-zinc-700'
+          }`}>
             {lead.appointment_scheduled ? (
-              <CheckCircle className="w-6 h-6 text-emerald-400" />
+              <CheckCircle className="w-5 h-5 text-emerald-400" />
             ) : (
-              <Phone className="w-6 h-6 text-zinc-400" />
+              <Phone className="w-5 h-5 text-zinc-400" />
             )}
           </div>
 
           {/* Customer Info */}
           <div>
-            <div className="flex items-center gap-3">
-              <h3 className="text-lg font-bold text-white">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h3 className="text-base font-semibold text-white">
                 {lead.customer_name || 'Unknown Caller'}
               </h3>
               <LeadQualityBadge quality={lead.lead_quality} />
               {lead.storm_damage && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-orange-500/20 text-orange-400">
-                  <AlertTriangle className="w-3 h-3" />
-                  Storm Damage
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-orange-500/15 text-orange-400 border border-orange-500/20">
+                  <Zap className="w-3 h-3" />
+                  Storm
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-4 mt-1 text-sm text-zinc-400">
+            <div className="flex items-center gap-4 mt-1.5 text-sm text-zinc-500">
               {lead.customer_phone && (
-                <span className="flex items-center gap-1">
-                  <Phone className="w-3 h-3" />
+                <span className="flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5" />
                   {lead.customer_phone}
                 </span>
               )}
               {lead.property_address && (
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
-                  {lead.property_address.substring(0, 40)}...
+                <span className="flex items-center gap-1.5 hidden sm:flex">
+                  <MapPin className="w-3.5 h-3.5" />
+                  {lead.property_address.substring(0, 35)}...
                 </span>
               )}
             </div>
@@ -215,60 +276,66 @@ const LeadCard = ({ lead, expanded, onToggle }: { lead: RoofingLead; expanded: b
 
         {/* Right Side */}
         <div className="flex items-center gap-4">
-          <div className="text-right">
+          <div className="text-right hidden sm:block">
             <div className="text-sm text-zinc-400">{formatDate(lead.created_at)}</div>
-            <div className="text-xs text-zinc-500 font-mono">{formatDuration(lead.duration_ms)}</div>
+            <div className="text-xs text-zinc-600 font-mono">{formatDuration(lead.duration_ms)}</div>
           </div>
-          {expanded ? (
-            <ChevronUp className="w-5 h-5 text-zinc-400" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-zinc-400" />
-          )}
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${expanded ? 'bg-amber-500/20 text-amber-400' : 'bg-zinc-800 text-zinc-400'}`}>
+            {expanded ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
+          </div>
         </div>
       </div>
 
       {/* Expanded Details */}
       {expanded && (
-        <div className="mt-6 pt-6 border-t border-zinc-800" onClick={(e) => e.stopPropagation()}>
+        <div className="mt-6 pt-6 border-t border-zinc-800/60" onClick={(e) => e.stopPropagation()}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
             {/* Customer Details */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-zinc-300 flex items-center gap-2">
-                <Home className="w-4 h-4" />
+            <div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800/50">
+              <h4 className="text-sm font-semibold text-white flex items-center gap-2 mb-4">
+                <div className="w-6 h-6 rounded-md bg-amber-500/20 flex items-center justify-center">
+                  <Home className="w-3.5 h-3.5 text-amber-400" />
+                </div>
                 Customer Details
               </h4>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-3 text-sm">
                 {lead.customer_email && (
                   <div className="flex items-center gap-2 text-zinc-400">
-                    <Mail className="w-4 h-4" />
-                    <a href={`mailto:${lead.customer_email}`} className="text-blue-400 hover:underline">
+                    <Mail className="w-4 h-4 text-zinc-500" />
+                    <a href={`mailto:${lead.customer_email}`} className="text-amber-400 hover:underline">
                       {lead.customer_email}
                     </a>
                   </div>
                 )}
                 {lead.property_address && (
                   <div className="flex items-start gap-2 text-zinc-400">
-                    <MapPin className="w-4 h-4 mt-0.5" />
+                    <MapPin className="w-4 h-4 text-zinc-500 mt-0.5" />
                     <span>{lead.property_address}</span>
                   </div>
                 )}
                 {lead.is_homeowner !== null && (
                   <div className="flex items-center gap-2 text-zinc-400">
-                    <Home className="w-4 h-4" />
-                    <span>Homeowner: {lead.is_homeowner ? 'Yes' : 'No'}</span>
+                    <Home className="w-4 h-4 text-zinc-500" />
+                    <span>Homeowner: <span className={lead.is_homeowner ? 'text-emerald-400' : 'text-zinc-500'}>{lead.is_homeowner ? 'Yes' : 'No'}</span></span>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Roof Details */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-zinc-300 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4" />
+            <div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800/50">
+              <h4 className="text-sm font-semibold text-white flex items-center gap-2 mb-4">
+                <div className="w-6 h-6 rounded-md bg-orange-500/20 flex items-center justify-center">
+                  <AlertTriangle className="w-3.5 h-3.5 text-orange-400" />
+                </div>
                 Roof Details
               </h4>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-3 text-sm">
                 {lead.roof_issue && (
                   <div className="text-zinc-400">
                     <span className="text-zinc-500">Issue:</span> {lead.roof_issue}
@@ -276,37 +343,45 @@ const LeadCard = ({ lead, expanded, onToggle }: { lead: RoofingLead; expanded: b
                 )}
                 <div className="flex items-center gap-2">
                   {lead.storm_damage ? (
-                    <span className="text-orange-400">⚠️ Storm Damage Reported</span>
+                    <span className="flex items-center gap-1.5 text-orange-400">
+                      <Zap className="w-4 h-4" />
+                      Storm Damage Reported
+                    </span>
                   ) : (
                     <span className="text-zinc-500">No Storm Damage</span>
                   )}
                 </div>
                 <div className="flex items-center gap-2 text-zinc-400">
-                  <Shield className="w-4 h-4" />
-                  <span>Insurance Claim: {lead.insurance_claim_filed ? 'Filed' : 'Not Filed'}</span>
+                  <Shield className="w-4 h-4 text-zinc-500" />
+                  <span>Insurance: <span className={lead.insurance_claim_filed ? 'text-emerald-400' : 'text-zinc-500'}>{lead.insurance_claim_filed ? 'Filed' : 'Not Filed'}</span></span>
                 </div>
                 {lead.wants_insurance_help && (
-                  <div className="text-emerald-400">✓ Wants Insurance Help</div>
+                  <div className="flex items-center gap-1.5 text-emerald-400">
+                    <CheckCircle className="w-4 h-4" />
+                    Wants Insurance Help
+                  </div>
                 )}
               </div>
             </div>
 
             {/* Appointment */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-zinc-300 flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
+            <div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800/50">
+              <h4 className="text-sm font-semibold text-white flex items-center gap-2 mb-4">
+                <div className="w-6 h-6 rounded-md bg-emerald-500/20 flex items-center justify-center">
+                  <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                </div>
                 Appointment
               </h4>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-3 text-sm">
                 {lead.appointment_scheduled ? (
                   <>
                     <div className="flex items-center gap-2 text-emerald-400">
                       <CheckCircle className="w-4 h-4" />
-                      <span>Scheduled</span>
+                      <span className="font-medium">Scheduled</span>
                     </div>
                     {lead.appointment_date && (
                       <div className="text-zinc-400">
-                        <span className="text-zinc-500">Date/Time:</span>{' '}
+                        <span className="text-zinc-500">Date:</span>{' '}
                         {new Date(lead.appointment_date).toLocaleString('en-US', {
                           weekday: 'short',
                           month: 'short',
@@ -318,8 +393,8 @@ const LeadCard = ({ lead, expanded, onToggle }: { lead: RoofingLead; expanded: b
                     )}
                   </>
                 ) : (
-                  <div className="flex items-center gap-2 text-yellow-400">
-                    <XCircle className="w-4 h-4" />
+                  <div className="flex items-center gap-2 text-yellow-500">
+                    <Clock className="w-4 h-4" />
                     <span>Not Scheduled</span>
                   </div>
                 )}
@@ -330,7 +405,12 @@ const LeadCard = ({ lead, expanded, onToggle }: { lead: RoofingLead; expanded: b
                 )}
                 {lead.urgency_level && (
                   <div className="text-zinc-400">
-                    <span className="text-zinc-500">Urgency:</span> {lead.urgency_level}
+                    <span className="text-zinc-500">Urgency:</span>{' '}
+                    <span className={
+                      lead.urgency_level.toLowerCase() === 'high' ? 'text-red-400' :
+                      lead.urgency_level.toLowerCase() === 'medium' ? 'text-yellow-400' :
+                      'text-zinc-400'
+                    }>{lead.urgency_level}</span>
                   </div>
                 )}
                 {lead.call_outcome && (
@@ -353,21 +433,26 @@ const LeadCard = ({ lead, expanded, onToggle }: { lead: RoofingLead; expanded: b
           {/* Call Summary */}
           {lead.call_summary && (
             <div className="mt-6">
-              <h4 className="text-sm font-semibold text-zinc-300 mb-2">Call Summary</h4>
-              <p className="text-sm text-zinc-400 bg-zinc-950/50 p-4 rounded-lg border border-zinc-800">
+              <h4 className="text-sm font-semibold text-white flex items-center gap-2 mb-3">
+                <div className="w-6 h-6 rounded-md bg-zinc-800 flex items-center justify-center">
+                  <MessageSquare className="w-3.5 h-3.5 text-zinc-400" />
+                </div>
+                Call Summary
+              </h4>
+              <p className="text-sm text-zinc-400 leading-relaxed bg-zinc-900/50 p-4 rounded-xl border border-zinc-800/50">
                 {lead.call_summary}
               </p>
             </div>
           )}
 
           {/* Actions */}
-          <div className="mt-6 flex items-center gap-3">
+          <div className="mt-6 flex items-center gap-3 flex-wrap">
             {lead.recording_url && (
               <a
                 href={lead.recording_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-sm text-zinc-300 transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl text-sm text-zinc-300 transition-all"
               >
                 <Headphones className="w-4 h-4" />
                 Listen to Recording
@@ -376,7 +461,7 @@ const LeadCard = ({ lead, expanded, onToggle }: { lead: RoofingLead; expanded: b
             {lead.customer_phone && (
               <a
                 href={`tel:${lead.customer_phone}`}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm text-white transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 rounded-xl text-sm text-white font-medium transition-all shadow-lg shadow-amber-500/20"
               >
                 <Phone className="w-4 h-4" />
                 Call Back
@@ -385,25 +470,23 @@ const LeadCard = ({ lead, expanded, onToggle }: { lead: RoofingLead; expanded: b
           </div>
 
           {/* Status Indicators */}
-          <div className="mt-4 pt-4 border-t border-zinc-800 flex items-center gap-6 text-xs">
+          <div className="mt-5 pt-5 border-t border-zinc-800/60 flex items-center gap-4 flex-wrap text-xs">
             {lead.email_sent !== undefined && (
-              <div className="flex items-center gap-1.5">
+              <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${lead.email_sent ? 'bg-emerald-500/10 text-emerald-400' : 'bg-zinc-800/50 text-zinc-500'}`}>
                 <Mail className="w-3.5 h-3.5" />
-                <span className={lead.email_sent ? 'text-emerald-400' : 'text-zinc-500'}>
-                  Email {lead.email_sent ? 'Sent ✓' : 'Not Sent'}
-                </span>
+                <span>Email {lead.email_sent ? 'Sent' : 'Pending'}</span>
               </div>
             )}
             {lead.direction && (
-              <div className="flex items-center gap-1.5 text-zinc-500">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-zinc-800/50 rounded-lg text-zinc-500">
                 <Phone className="w-3.5 h-3.5" />
-                <span className="capitalize">{lead.direction} Call</span>
+                <span className="capitalize">{lead.direction}</span>
               </div>
             )}
             {lead.duration_ms && (
-              <div className="flex items-center gap-1.5 text-zinc-500">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-zinc-800/50 rounded-lg text-zinc-500">
                 <Clock className="w-3.5 h-3.5" />
-                <span>{Math.floor(lead.duration_ms / 60000)}:{String(Math.floor((lead.duration_ms % 60000) / 1000)).padStart(2, '0')} duration</span>
+                <span>{Math.floor(lead.duration_ms / 60000)}:{String(Math.floor((lead.duration_ms % 60000) / 1000)).padStart(2, '0')}</span>
               </div>
             )}
           </div>
@@ -575,210 +658,294 @@ const RoofingLeads = () => {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white p-6 lg:p-10 font-sans">
-
-      {/* Header */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-4xl font-bold tracking-tight text-white">
-              Roofing <span className="text-blue-400">Leads</span>
-            </h1>
-            <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono rounded-full flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              LIVE
-            </span>
-          </div>
-          <p className="text-zinc-500 text-sm font-medium">
-            Real-time leads from Roofing Pros USA voice agent • Last updated: {lastRefresh.toLocaleTimeString()}
-          </p>
-        </div>
-
-        <button
-          onClick={fetchLeads}
-          disabled={loading}
-          className="flex items-center gap-2 px-4 py-2.5 bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 rounded-lg transition-all text-sm font-medium disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
-      </header>
-
-      {/* Stats Grid - Roofing Pros Themed */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard
-          label="Total Leads"
-          value={totalLeads}
-          icon={Phone}
-          color="text-amber-400"
-          description="All incoming calls"
-        />
-        <StatCard
-          label="Appointments Booked"
-          value={appointmentsBooked}
-          icon={Calendar}
-          color="text-emerald-400"
-          description="Inspections scheduled"
-        />
-        <StatCard
-          label="Hot Leads"
-          value={hotLeads}
-          icon={Flame}
-          color="text-red-400"
-          description="Ready to close"
-        />
-        <StatCard
-          label="Storm Damage"
-          value={stormDamageLeads}
-          icon={AlertTriangle}
-          color="text-orange-400"
-          description="Insurance eligible"
-        />
-      </div>
-
-      {/* Post-Call Data Extraction Preview - Glowing Boxes */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <GlowingCard>
-          <div className="flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
-              <Home className="w-5 h-5 text-amber-400" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-white mb-1">Property Info</h3>
-              <p className="text-sm text-zinc-400">AI extracts address, property type, and homeowner status from every call</p>
-            </div>
-          </div>
-        </GlowingCard>
-
-        <GlowingCard>
-          <div className="flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-orange-500/10 border border-orange-500/20">
-              <AlertTriangle className="w-5 h-5 text-orange-400" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-white mb-1">Roof Assessment</h3>
-              <p className="text-sm text-zinc-400">Storm damage detection, insurance claim status, and urgency scoring</p>
-            </div>
-          </div>
-        </GlowingCard>
-
-        <GlowingCard>
-          <div className="flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-              <Calendar className="w-5 h-5 text-emerald-400" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-white mb-1">Smart Scheduling</h3>
-              <p className="text-sm text-zinc-400">Automatic appointment booking with office routing by zip code</p>
-            </div>
-          </div>
-        </GlowingCard>
-      </div>
-
-      {/* 16 Post-Call Extraction Fields - Feature Showcase */}
-      {leads.length === 0 && (
-        <div className="mb-10">
-          <h2 className="text-xl font-bold text-zinc-200 mb-4 flex items-center gap-2">
-            <span className="text-amber-400">16</span> Data Points Extracted Per Call
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-            {[
-              { label: "Name", icon: "👤" },
-              { label: "Phone", icon: "📱" },
-              { label: "Email", icon: "📧" },
-              { label: "Address", icon: "🏠" },
-              { label: "Roof Issue", icon: "🔧" },
-              { label: "Storm Damage", icon: "⛈️" },
-              { label: "Insurance Filed", icon: "📋" },
-              { label: "Insurance Help", icon: "🤝" },
-              { label: "Homeowner", icon: "🔑" },
-              { label: "Urgency", icon: "⚡" },
-              { label: "Appt Scheduled", icon: "📅" },
-              { label: "Appt Date", icon: "🗓️" },
-              { label: "Office", icon: "📍" },
-              { label: "Call Outcome", icon: "✅" },
-              { label: "Lead Quality", icon: "🔥" },
-              { label: "Summary", icon: "📝" },
-            ].map((field, i) => (
-              <div key={i} className="bg-zinc-900/60 border border-zinc-800/50 rounded-lg p-3 text-center hover:border-amber-500/30 transition-colors">
-                <div className="text-lg mb-1">{field.icon}</div>
-                <div className="text-xs text-zinc-400">{field.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Leads List */}
-      <div>
-        <h2 className="text-xl font-bold text-zinc-200 mb-4">Recent Leads</h2>
-
-        {loading && leads.length === 0 ? (
-          <div className="text-center py-12 text-zinc-500">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4" />
-            <p>Loading leads...</p>
-          </div>
-        ) : leads.length === 0 ? (
-          <CyberCard className="text-center py-12">
-            <Phone className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-zinc-400 mb-2">No leads yet</h3>
-            <p className="text-sm text-zinc-500">
-              Leads will appear here when calls come through the Roofing Pros USA voice agent.
-            </p>
-          </CyberCard>
-        ) : (
+    <div className="min-h-screen bg-zinc-950 text-white">
+      {/* Subtle gradient background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-zinc-950 via-zinc-950 to-zinc-900 pointer-events-none" />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-900/10 via-transparent to-transparent pointer-events-none" />
+      
+      <div className="relative z-10 p-6 lg:p-10 max-w-[1600px] mx-auto">
+        {/* Header */}
+        <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-6">
           <div>
-            {leads.map((lead) => (
-              <LeadCard
-                key={lead.id}
-                lead={lead}
-                expanded={expandedId === lead.id}
-                onToggle={() => setExpandedId(expandedId === lead.id ? null : lead.id)}
-              />
-            ))}
+            <div className="flex items-center gap-4 mb-3">
+              {/* Logo/Brand */}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                  <Home className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold tracking-tight text-white">
+                    Lead Dashboard
+                  </h1>
+                  <p className="text-xs text-zinc-500 font-medium">Roofing Pros USA</p>
+                </div>
+              </div>
+              
+              {/* Live indicator */}
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-emerald-400 text-xs font-semibold tracking-wide">LIVE</span>
+              </div>
+            </div>
+            
+            <p className="text-zinc-500 text-sm">
+              Real-time AI voice agent leads | Updated {lastRefresh.toLocaleTimeString()}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Quick stats pills */}
+            <div className="hidden md:flex items-center gap-2 mr-4">
+              <span className="px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-zinc-400">
+                <span className="text-white font-semibold">{totalLeads}</span> total
+              </span>
+              <span className="px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs text-emerald-400">
+                <span className="font-semibold">{appointmentsBooked}</span> booked
+              </span>
+            </div>
+            
+            <button
+              onClick={fetchLeads}
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2.5 bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 hover:bg-zinc-800 rounded-xl transition-all text-sm font-medium disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
+        </header>
+
+        {/* Stats Grid - Premium Bento Layout */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard
+            label="Total Leads"
+            value={totalLeads}
+            icon={Phone}
+            color="from-amber-500 to-orange-600"
+            description="All incoming calls"
+          />
+          <StatCard
+            label="Appointments"
+            value={appointmentsBooked}
+            icon={Calendar}
+            color="from-emerald-500 to-teal-600"
+            description="Inspections scheduled"
+            trend={totalLeads > 0 ? { value: Math.round((appointmentsBooked / totalLeads) * 100), positive: true } : undefined}
+          />
+          <StatCard
+            label="Hot Leads"
+            value={hotLeads}
+            icon={Flame}
+            color="from-red-500 to-rose-600"
+            description="Ready to close"
+          />
+          <StatCard
+            label="Storm Damage"
+            value={stormDamageLeads}
+            icon={AlertTriangle}
+            color="from-orange-500 to-amber-600"
+            description="Insurance eligible"
+          />
+        </div>
+
+        {/* Post-Call Data Extraction Preview - Premium Bento Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+          <BentoCard>
+            <div className="flex flex-col h-full gap-4">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30 flex items-center justify-center">
+                <Home className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-white mb-2">Property Info</h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">AI extracts address, property type, and homeowner status from every call</p>
+              </div>
+            </div>
+          </BentoCard>
+
+          <BentoCard>
+            <div className="flex flex-col h-full gap-4">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-orange-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-white mb-2">Roof Assessment</h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">Storm damage detection, insurance claim status, and urgency scoring</p>
+              </div>
+            </div>
+          </BentoCard>
+
+          <BentoCard>
+            <div className="flex flex-col h-full gap-4">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 border border-emerald-500/30 flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-white mb-2">Smart Scheduling</h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">Automatic appointment booking with office routing by zip code</p>
+              </div>
+            </div>
+          </BentoCard>
+        </div>
+
+        {/* 16 Post-Call Extraction Fields - Feature Showcase */}
+        {leads.length === 0 && (
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+                <BarChart3 className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-white">
+                  <span className="text-amber-400">16</span> Data Points Per Call
+                </h2>
+                <p className="text-xs text-zinc-500">Extracted automatically by AI</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+              {[
+                { label: "Name", icon: User },
+                { label: "Phone", icon: Phone },
+                { label: "Email", icon: Mail },
+                { label: "Address", icon: MapPin },
+                { label: "Roof Issue", icon: AlertTriangle },
+                { label: "Storm Damage", icon: Zap },
+                { label: "Insurance", icon: Shield },
+                { label: "Urgency", icon: Activity },
+                { label: "Homeowner", icon: Home },
+                { label: "Scheduled", icon: Calendar },
+                { label: "Date", icon: Clock },
+                { label: "Office", icon: MapPin },
+                { label: "Outcome", icon: CheckCircle },
+                { label: "Quality", icon: Flame },
+                { label: "Summary", icon: MessageSquare },
+                { label: "Recording", icon: Headphones },
+              ].map((field, i) => (
+                <div 
+                  key={i} 
+                  className="group bg-zinc-900/60 border border-zinc-800/50 rounded-xl p-3 text-center hover:border-amber-500/30 hover:bg-zinc-900 transition-all duration-200"
+                >
+                  <field.icon className="w-4 h-4 mx-auto mb-2 text-zinc-500 group-hover:text-amber-400 transition-colors" />
+                  <div className="text-[10px] text-zinc-500 group-hover:text-zinc-300 transition-colors font-medium">{field.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
-      </div>
+
+        {/* Leads List */}
+        <div>
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center">
+                <Activity className="w-4 h-4 text-zinc-300" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-white">Recent Leads</h2>
+                <p className="text-xs text-zinc-500">{leads.length} total leads</p>
+              </div>
+            </div>
+            
+            {leads.length > 0 && (
+              <div className="flex items-center gap-2 text-xs text-zinc-500">
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                {leads.filter(l => l.appointment_scheduled).length} scheduled
+              </div>
+            )}
+          </div>
+
+          {loading && leads.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="relative">
+                <div className="w-12 h-12 rounded-full border-2 border-zinc-800 border-t-amber-500 animate-spin" />
+                <div className="absolute inset-0 w-12 h-12 rounded-full bg-amber-500/20 blur-xl animate-pulse" />
+              </div>
+              <p className="text-zinc-500 text-sm mt-4">Loading leads...</p>
+            </div>
+          ) : leads.length === 0 ? (
+            <EmptyCard className="text-center py-16">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center mx-auto mb-4">
+                <Phone className="w-8 h-8 text-zinc-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-zinc-300 mb-2">No leads yet</h3>
+              <p className="text-sm text-zinc-500 max-w-md mx-auto">
+                Leads will appear here when calls come through the Roofing Pros USA voice agent.
+              </p>
+            </EmptyCard>
+          ) : (
+            <div className="space-y-4">
+              {leads.map((lead) => (
+                <LeadCard
+                  key={lead.id}
+                  lead={lead}
+                  expanded={expandedId === lead.id}
+                  onToggle={() => setExpandedId(expandedId === lead.id ? null : lead.id)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
       {/* AI Insights Chatbot - Floating Button */}
       <button
         onClick={() => setChatOpen(!chatOpen)}
-        className="fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 rounded-full shadow-lg shadow-amber-500/25 transition-all duration-300 hover:scale-105"
+        className="fixed bottom-6 right-6 z-50 group"
       >
-        {chatOpen ? (
-          <span className="text-white font-bold text-lg">&times;</span>
-        ) : (
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-white" />
+        <div className="relative">
+          {/* Glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
+          
+          <div className="relative p-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 rounded-2xl shadow-2xl shadow-amber-500/30 transition-all duration-300 group-hover:scale-105">
+            {chatOpen ? (
+              <XCircle className="w-6 h-6 text-white" />
+            ) : (
+              <Sparkles className="w-6 h-6 text-white" />
+            )}
+          </div>
+        </div>
+        
+        {/* Tooltip */}
+        {!chatOpen && (
+          <div className="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            Ask AI about your leads
           </div>
         )}
       </button>
 
       {/* AI Chatbot Panel */}
       {chatOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-96 max-h-[500px] bg-zinc-900/95 backdrop-blur-lg border border-zinc-700 rounded-2xl shadow-2xl shadow-black/50 flex flex-col overflow-hidden">
+        <div className="fixed bottom-24 right-6 z-50 w-[400px] max-h-[520px] bg-zinc-950/95 backdrop-blur-xl border border-zinc-800 rounded-3xl shadow-2xl shadow-black/60 flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="p-4 border-b border-zinc-700 bg-gradient-to-r from-amber-500/10 to-orange-500/10">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600">
-                <TrendingUp className="w-5 h-5 text-white" />
+          <div className="p-5 border-b border-zinc-800/80 bg-gradient-to-r from-amber-500/5 to-orange-500/5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                  <TrendingUp className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white">Lead Insights AI</h3>
+                  <p className="text-xs text-zinc-500">Analyze your roofing leads</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-white">Lead Insights AI</h3>
-                <p className="text-xs text-zinc-400">Ask about trends, conversions & more</p>
-              </div>
+              <button 
+                onClick={() => setChatOpen(false)}
+                className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
+              >
+                <XCircle className="w-4 h-4 text-zinc-500" />
+              </button>
             </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[300px]">
+          <div className="flex-1 overflow-y-auto p-5 space-y-4 max-h-[320px]">
             {chatMessages.length === 0 && (
-              <div className="text-center py-8">
-                <Bot className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
-                <p className="text-sm text-zinc-500 mb-4">Ask me about your roofing leads!</p>
+              <div className="text-center py-6">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-700 flex items-center justify-center mx-auto mb-4">
+                  <Bot className="w-7 h-7 text-zinc-500" />
+                </div>
+                <p className="text-sm text-zinc-400 mb-5">Ask me about your roofing leads!</p>
                 <div className="space-y-2">
                   {["What trends do you see?", "Show conversion rate", "Storm damage analysis"].map((suggestion, i) => (
                     <button
@@ -794,7 +961,7 @@ const RoofingLeads = () => {
                           }, 500);
                         }, 100);
                       }}
-                      className="block w-full text-left px-3 py-2 text-sm text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 rounded-lg transition-colors"
+                      className="block w-full text-left px-4 py-2.5 text-sm text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl transition-all"
                     >
                       {suggestion}
                     </button>
@@ -806,20 +973,20 @@ const RoofingLeads = () => {
             {chatMessages.map((msg, i) => (
               <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
                 {msg.role === 'assistant' && (
-                  <div className="p-1.5 rounded-lg bg-amber-500/20 h-fit">
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
                     <Bot className="w-4 h-4 text-amber-400" />
                   </div>
                 )}
-                <div className={`max-w-[85%] p-3 rounded-xl text-sm whitespace-pre-wrap ${
+                <div className={`max-w-[85%] p-3.5 rounded-2xl text-sm whitespace-pre-wrap leading-relaxed ${
                   msg.role === 'user'
-                    ? 'bg-amber-500/20 text-amber-100'
-                    : 'bg-zinc-800 text-zinc-200'
+                    ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/20 text-amber-100 border border-amber-500/20'
+                    : 'bg-zinc-900 text-zinc-200 border border-zinc-800'
                 }`}>
                   {msg.content}
                 </div>
                 {msg.role === 'user' && (
-                  <div className="p-1.5 rounded-lg bg-zinc-700 h-fit">
-                    <User className="w-4 h-4 text-zinc-300" />
+                  <div className="w-7 h-7 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center flex-shrink-0">
+                    <User className="w-4 h-4 text-zinc-400" />
                   </div>
                 )}
               </div>
@@ -827,14 +994,14 @@ const RoofingLeads = () => {
 
             {chatLoading && (
               <div className="flex gap-3">
-                <div className="p-1.5 rounded-lg bg-amber-500/20 h-fit">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
                   <Bot className="w-4 h-4 text-amber-400" />
                 </div>
-                <div className="bg-zinc-800 px-4 py-3 rounded-xl">
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="bg-zinc-900 border border-zinc-800 px-4 py-3 rounded-2xl">
+                  <div className="flex gap-1.5">
+                    <span className="w-2 h-2 bg-amber-500/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-2 h-2 bg-amber-500/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-2 h-2 bg-amber-500/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 </div>
               </div>
@@ -842,24 +1009,25 @@ const RoofingLeads = () => {
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t border-zinc-700">
+          <div className="p-4 border-t border-zinc-800/80">
             <ChatInput
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               onSubmit={handleChatSubmit}
               loading={chatLoading}
               variant="default"
-              className="bg-zinc-800/50 border-zinc-700"
+              className="bg-zinc-900 border-zinc-800 rounded-xl"
             >
               <ChatInputTextArea
                 placeholder="Ask about trends, conversions..."
                 className="text-white placeholder:text-zinc-500 bg-transparent"
               />
-              <ChatInputSubmit className="bg-amber-500 hover:bg-amber-600 border-none" />
+              <ChatInputSubmit className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 border-none shadow-lg shadow-amber-500/20" />
             </ChatInput>
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
