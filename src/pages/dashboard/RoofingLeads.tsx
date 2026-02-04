@@ -17,9 +17,9 @@ import {
   Flame,
   Snowflake
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { GlowingEffect } from "@/components/ui/glowing-effect";
-import { ChatInput, ChatInputTextArea, ChatInputSubmit } from "@/components/ui/chat-input";
+import { supabase } from "../../integrations/supabase/client";
+import { GlowingEffect } from "../../components/ui/glowing-effect";
+import { ChatInput, ChatInputTextArea, ChatInputSubmit } from "../../components/ui/chat-input";
 import { MessageSquare, Bot, User, TrendingUp, Sparkles } from "lucide-react";
 
 // Types

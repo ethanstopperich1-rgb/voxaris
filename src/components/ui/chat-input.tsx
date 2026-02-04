@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import { useTextareaResize } from "@/hooks/use-textarea-resize";
+import { Button } from "./button";
+import { Textarea } from "./textarea";
+import { cn } from "../../lib/utils";
+import { useTextareaResize } from "../../hooks/use-textarea-resize";
 import { ArrowUpIcon } from "lucide-react";
 import type React from "react";
 import { createContext, useContext } from "react";
